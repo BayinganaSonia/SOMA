@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
@@ -7,11 +8,11 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = 'your-secret-key'; // In production, use environment variable
+const SECRET_KEY = process.env.SECRET_KEY || 'fallback-secret-key'; 
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('.')); // Serve static files from root directory
+app.use(express.static('.')); 
 
 // Database setup
 const db = new sqlite3.Database('./soma.db');
@@ -48,13 +49,25 @@ db.serialize(() => {
     FOREIGN KEY(lesson_id) REFERENCES lessons(id)
   )`);
 
-  // Insert sample data
-  db.run(`INSERT OR IGNORE INTO lessons (title, content, audio_text) VALUES
-    ('Mathematics', 'Learn basic addition and subtraction.', 'Welcome to mathematics. Two plus two equals four.'),
-    ('Science', 'Introduction to plants and nature.', 'Plants need sunlight water and soil to grow.')`);
+  // Insert sample data only if tables are empty
+  db.get("SELECT COUNT(*) as count FROM lessons", (err, row) => {
+    if (row.count === 0) {
+      db.run(`INSERT INTO lessons (title, content, audio_text) VALUES
+        ('Mathematics', 'Learn basic addition and subtraction.', 'Welcome to mathematics. Two plus two equals four.'),
+        ('Science', 'Introduction to plants and nature.', 'Plants need sunlight water and soil to grow.'),
+        ('History', 'Ancient civilizations and their contributions.', 'History teaches us about our past and shapes our future.'),
+        ('Geography', 'Exploring continents and cultures.', 'Geography helps us understand the world around us.')`);
+    }
+  });
 
-  db.run(`INSERT OR IGNORE INTO quizzes (question, options, correct_answer) VALUES
-    ('What is 2 + 2?', '["3","4","5"]', 1)`);
+  db.get("SELECT COUNT(*) as count FROM quizzes", (err, row) => {
+    if (row.count === 0) {
+      db.run(`INSERT INTO quizzes (question, options, correct_answer) VALUES
+        ('What is 2 + 2?', '["3","4","5"]', 1),
+        ('What do plants need to grow?', '["Water only","Sunlight only","Sunlight, water and soil"]', 2),
+        ('What is the capital of France?', '["London","Paris","Berlin"]', 1)`);
+    }
+  });
 });
 
 // Middleware to verify JWT
@@ -64,6 +77,20 @@ function verifyToken(req, res, next) {
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) return res.status(401).send('Invalid token');
+    req.userId = decoded.id;
+    req.userRole = decoded.role;
+    next();
+  });
+}
+
+// Middleware to verify teacher role
+function verifyTeacher(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(403).send('Token required');
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(401).send('Invalid token');
+    if (decoded.role !== 'teacher') return res.status(403).send('Teacher access required');
     req.userId = decoded.id;
     next();
   });
@@ -132,6 +159,46 @@ app.get('/api/progress', verifyToken, (req, res) => {
     });
 });
 
+// Teacher endpoints
+app.post('/api/lessons', verifyTeacher, (req, res) => {
+  const { title, content, audio_text } = req.body;
+  if (!title || !content || !audio_text) return res.status(400).send('All fields required');
+
+  db.run('INSERT INTO lessons (title, content, audio_text) VALUES (?, ?, ?)', [title, content, audio_text], function(err) {
+    if (err) return res.status(500).send('Error adding lesson');
+    res.status(201).send('Lesson added');
+  });
+});
+
+app.post('/api/quizzes', verifyTeacher, (req, res) => {
+  const { question, options, correct_answer } = req.body;
+  if (!question || !options || correct_answer === undefined) return res.status(400).send('All fields required');
+
+  const optionsStr = JSON.stringify(options);
+  db.run('INSERT INTO quizzes (question, options, correct_answer) VALUES (?, ?, ?)', [question, optionsStr, correct_answer], function(err) {
+    if (err) return res.status(500).send('Error adding quiz');
+    res.status(201).send('Quiz added');
+  });
+});
+
+app.get('/api/students', verifyTeacher, (req, res) => {
+  db.all('SELECT id, username, role FROM users WHERE role = "student"', (err, students) => {
+    if (err) return res.status(500).send('Error fetching students');
+    res.json(students);
+  });
+});
+
+app.get('/api/students/:id/progress', verifyTeacher, (req, res) => {
+  const studentId = req.params.id;
+  db.all('SELECT l.title, p.completed FROM progress p JOIN lessons l ON p.lesson_id = l.id WHERE p.user_id = ?',
+    [studentId], (err, progress) => {
+      if (err) return res.status(500).send('Error fetching student progress');
+      res.json(progress);
+    });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app; // Export for testing
