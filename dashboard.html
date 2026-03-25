@@ -318,6 +318,7 @@ Lessons
 <span class="icon">🧠</span>
 Quiz
 </div>
+<button onclick="startQuizVoice()">🎤 Answer with Voice</button>
 <div class="card" onclick="openPage('progress'); speak('Opening progress')">
 <span class="icon">📈</span>
 Progress
@@ -609,6 +610,62 @@ btn.style.background="var(--danger)";
 speak("Incorrect answer try again");
 }
 }
+function startQuizVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    speak("Voice not supported");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    let spoken = event.results[0][0].transcript.toLowerCase();
+    console.log("SPOKEN:", spoken);
+
+    speak("You said " + spoken);
+
+    const buttons = document.querySelectorAll(".quiz-options button");
+    let matchedIndex = -1;
+
+    // convert words → numbers
+    const wordToNumber = {
+      "one": "1",
+      "two": "2",
+      "three": "3",
+      "four": "4",
+      "for": "4",
+      "five": "5"
+    };
+
+    // clean spoken input
+    let cleaned = spoken.replace(/[^a-z0-9 ]/g, "");
+
+    buttons.forEach((btn, index) => {
+      let option = btn.innerText.toLowerCase();
+
+      // direct match (e.g. "4")
+      if (cleaned.includes(option)) {
+        matchedIndex = index;
+      }
+
+      // word match (e.g. "four" → "4")
+      Object.keys(wordToNumber).forEach(word => {
+        if (cleaned.includes(word) && option === wordToNumber[word]) {
+          matchedIndex = index;
+        }
+      });
+    });
+
+    if (matchedIndex !== -1) {
+      buttons[matchedIndex].click();
+    } else {
+      speak("Answer not recognized, please try again");
+    }
+  };
+}
 /* HELP */
 function help(){
 speak("Welcome to SOMA Plus. Use lessons to study, quiz to test knowledge and progress to track learning.");
@@ -679,7 +736,7 @@ async function addLesson() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token
+        'Authorization': 'Bearer ' + token
       },
       body: JSON.stringify({ title, content, audio_text })
     });
@@ -706,7 +763,7 @@ async function addQuiz() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token
+        'Authorization': 'Bearer ' + token
       },
       body: JSON.stringify({ question, options, correct_answer })
     });

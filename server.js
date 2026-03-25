@@ -72,11 +72,15 @@ db.serialize(() => {
 
 // Middleware to verify JWT
 function verifyToken(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(403).send('Token required');
+  const authHeader = req.headers['authorization'];
+
+  if (!authHeader) return res.status(403).send('Token required');
+
+  const token = authHeader.split(' ')[1] || authHeader;
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) return res.status(401).send('Invalid token');
+
     req.userId = decoded.id;
     req.userRole = decoded.role;
     next();
@@ -85,12 +89,26 @@ function verifyToken(req, res, next) {
 
 // Middleware to verify teacher role
 function verifyTeacher(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(403).send('Token required');
+  const authHeader = req.headers['authorization'];
+
+  console.log("AUTH HEADER:", authHeader); // 👈 ADD THIS
+
+  if (!authHeader) return res.status(403).send('Token required');
+
+  const token = authHeader.split(' ')[1] || authHeader;
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) return res.status(401).send('Invalid token');
-    if (decoded.role !== 'teacher') return res.status(403).send('Teacher access required');
+    if (err) {
+      console.log("JWT ERROR:", err.message); // 👈 ADD THIS
+      return res.status(401).send('Invalid token');
+    }
+
+    console.log("DECODED TOKEN:", decoded); // 👈 ADD THIS
+
+    if (decoded.role !== 'teacher') {
+      return res.status(403).send('Teacher access required');
+    }
+
     req.userId = decoded.id;
     next();
   });
@@ -113,14 +131,23 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
 
-  db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
-    if (err || !user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).send('Invalid credentials');
-    }
+  db.get(
+    'SELECT * FROM users WHERE username = ?',
+    [username],
+    async (err, user) => {
+      if (err || !user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).send('Invalid credentials');
+      }
 
-    const token = jwt.sign({ id: user.id }, SECRET_KEY);
-    res.json({ token, role: user.role });
-  });
+      // ✅ FIX: include role inside token
+      const token = jwt.sign(
+        { id: user.id, role: user.role },
+        SECRET_KEY
+      );
+
+      res.json({ token, role: user.role });
+    }
+  );
 });
 
 // Get lessons
