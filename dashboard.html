@@ -355,6 +355,7 @@ Logout
 <div class="quiz-options">
 <!-- Options will be loaded here -->
 </div>
+<button onclick="startQuizVoice()">🎤 Answer with Voice</button>
 <button class="back" onclick="goHome()">Back</button>
 </div>
 <!-- PROGRESS -->
@@ -460,6 +461,40 @@ let speech = new SpeechSynthesisUtterance(text);
 speech.rate = 1;
 speech.pitch = 1;
 window.speechSynthesis.speak(speech);
+}
+/*Voice to Quiz*/
+function startQuizVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    speak("Voice input not supported");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    let spoken = event.results[0][0].transcript.toLowerCase();
+    speak("You said " + spoken);
+
+    // Get current options
+    const buttons = document.querySelectorAll(".quiz-options button");
+
+    let matchedIndex = -1;
+
+    buttons.forEach((btn, index) => {
+      if (spoken.includes(btn.innerText.toLowerCase())) {
+        matchedIndex = index;
+      }
+    });
+
+    if (matchedIndex !== -1) {
+      buttons[matchedIndex].click(); // simulate click
+    } else {
+      speak("Answer not recognized, please try again");
+    }
+  };
 }
 /* LESSON */
 async function loadLessons() {
