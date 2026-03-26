@@ -19,9 +19,12 @@ const db = new sqlite3.Database('./soma.db');
 
 // Initialize database tables
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
+db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
+    email TEXT UNIQUE,
+    full_name TEXT,
+    phone TEXT,
     password TEXT,
     role TEXT DEFAULT 'student'
   )`);
@@ -118,12 +121,57 @@ function verifyTeacher(req, res, next) {
 
 // User registration
 app.post('/api/register', async (req, res) => {
-  const { username, password, role = 'student' } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const { username, password, confirmPassword, full_name, email, phone, role = 'student', termsAccepted } = req.body;
 
-  db.run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, hashedPassword, role], function(err) {
-    if (err) return res.status(400).send('User already exists');
-    res.status(201).send('User registered');
+  // Validation
+  if (!username || !password || !full_name) {
+    return res.status(400).json({ error: 'Username, password, and full name are required' });
+  }
+  if (password !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do not match' });
+  }
+  if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters with letters and numbers' });
+  }
+  if (!termsAccepted) {
+    return res.status(400).json({ error: 'You must accept the terms and conditions' });
+  }
+  if (role === 'teacher' && (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) {
+    return res.status(400).json({ error: 'Valid email is required for teacher registration' });
+  }
+  if (phone && !/^\\+?\\d{10,15}$/.test(phone)) {
+    return res.status(400).json({ error: 'Invalid phone number format' });
+  }
+
+  // Check existing username
+  db.get('SELECT id FROM users WHERE username = ?', [username], async (err, user) => {
+    if (user) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+    if (email) {
+      db.get('SELECT id FROM users WHERE email = ?', [email], (err, emailUser) => {
+        if (emailUser) {
+          return res.status(400).json({ error: 'Email already exists' });
+        }
+        proceedRegistration();
+      });
+    } else {
+      proceedRegistration();
+    }
+
+    async function proceedRegistration() {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      db.run(
+        'INSERT INTO users (username, full_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)',
+        [username, full_name, email || null, phone || null, hashedPassword, role],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ error: 'Registration failed' });
+          }
+          res.status(201).json({ message: 'User registered successfully' });
+        }
+      );
+    }
   });
 });
 
