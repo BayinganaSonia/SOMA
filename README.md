@@ -1,4 +1,6 @@
 🧠 SOMA+ Smart Learning Platform 🎓
+
+
 🌍 Overview
 
 SOMA+ is an accessible, audio-first smart learning platform designed to empower blind and visually impaired learners through inclusive digital education.
@@ -41,18 +43,24 @@ SOMA+ provides an inclusive, assistive learning platform that:
 To empower blind and visually impaired learners with accessible, adaptive, and culturally relevant digital tools that promote independent and inclusive learning.
 
 👥 User Roles
+
 🧑‍🎓 Student
+
 Access audio lessons
 Take quizzes (voice or button input)
 Receive instant audio feedback
 Track progress and completion
 Navigate using gestures, keyboard, or voice
+
 👨‍🏫 Teacher
+
 Create and manage lessons & quizzes
 Assign learning content
 Monitor student performance
 Track progress reports
+
 ✨ Key Features
+
 🔐 JWT Authentication (Role-based access)
 🎧 Audio Lessons (Text-to-Speech)
 🧠 Interactive Quizzes (Voice + Manual input)
@@ -63,7 +71,10 @@ Track progress reports
 📴 Offline-first functionality
 ♿ Accessibility-first design (TalkBack compatible)
 🌙 Responsive dark-themed UI
+
 🧱 Project Structure
+
+
 SOMA/
 ├── index.html        # Authentication (Login/Register)
 ├── dashboard.html    # Role-based dashboard
@@ -71,19 +82,25 @@ SOMA/
 ├── package.json      # Dependencies & scripts
 ├── soma.db           # SQLite database (auto-generated)
 └── README.md         # Project documentation
+
 🔄 System Flow
+
+
 User opens the platform
 Registers or logs in
 System assigns role (Student / Teacher)
 Redirect to dashboard
 
 Student Flow:
+
 Lessons → Quizzes → Audio Feedback → Progress Tracking
 
 Teacher Flow:
+
 Create Content → Assign Lessons → Monitor Students → Analyze Progress
 
 ⚙️ Setup Guide (Beginner Friendly)
+
 1️⃣ Install Requirements
 Node.js → https://nodejs.org
 Git → https://git-scm.com
