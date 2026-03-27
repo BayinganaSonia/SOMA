@@ -27,6 +27,7 @@ Loads required sample data (lessons & quizzes)
 👉 If you skip this step, registration will not work properly.
 
 🧪 Test Access Flow
+
 Open the app
 Click "Register"
 On the register page, click "Fill Test Data"
@@ -34,6 +35,7 @@ Register as:
 Student
 Teacher
 Log in and start using the platform
+
 📄 Documentation (SRS)
 
 👉 https://docs.google.com/document/d/1ebIqLaanNMra0ePfCZMApCf3PG5rULRwB6ccAQ5uYTg/edit?usp=sharing
@@ -64,18 +66,24 @@ SOMA+ provides an inclusive, assistive learning platform that:
 To empower blind and visually impaired learners with accessible, adaptive, and culturally relevant digital tools that promote independent and inclusive learning.
 
 👥 User Roles
+
 🧑‍🎓 Student
+
 Access audio lessons
 Take quizzes (voice or button input)
 Receive instant audio feedback
 Track progress and completion
 Navigate using gestures, keyboard, or voice
+
 👨‍🏫 Teacher
+
 Create and manage lessons & quizzes
 Assign learning content
 Monitor student performance
 Track progress reports
+
 ✨ Key Features
+
 🔐 JWT Authentication (Role-based access)
 🎧 Audio Lessons (Text-to-Speech)
 🧠 Interactive Quizzes (Voice + Manual input)
@@ -86,7 +94,11 @@ Track progress reports
 📴 Offline-first functionality
 ♿ Accessibility-first design (TalkBack compatible)
 🌙 Responsive dark-themed UI
+
+
 🧱 Project Structure
+
+
 SOMA/
 ├── index.html        # Authentication (Login/Register)
 ├── dashboard.html    # Role-based dashboard
@@ -94,7 +106,11 @@ SOMA/
 ├── package.json      # Dependencies & scripts
 ├── soma.db           # SQLite database (auto-generated)
 └── README.md         # Project documentation
+
+
 🔄 System Flow
+
+
 User opens the platform
 Registers or logs in
 System assigns role (Student / Teacher)
@@ -107,6 +123,7 @@ Teacher Flow:
 Create Content → Assign Lessons → Monitor Students → Analyze Progress
 
 ⚙️ Setup Guide (Beginner Friendly)
+
 1️⃣ Install Requirements
 Node.js → https://nodejs.org
 Git → https://git-scm.com
@@ -124,18 +141,25 @@ http://localhost:3000
 ✅ Sample lessons & quizzes included
 
 📡 API Endpoints
+
 🔓 Authentication
+
 POST /api/register
 POST /api/login
+
 🎓 Student
+
 GET /api/lessons
 GET /api/quiz
 POST /api/progress
+
 👨‍🏫 Teacher
+
 POST /api/lessons
 POST /api/quizzes
 GET /api/students
 GET /api/students/:id/progress
+
 🗄️ Database (SQLite)
 
 Tables:
@@ -144,6 +168,7 @@ users
 lessons
 quizzes
 progress
+
 🛠️ Tech Stack
 
 Backend:
@@ -156,13 +181,17 @@ Tools:
 Nodemon, Jest
 
 ♿ Accessibility Features
+
 🔊 Text-to-Speech lessons & feedback
 🎤 Voice input for interaction
 👆 Gesture-based navigation
 ⌨️ Keyboard shortcuts
 📱 Mobile-first responsive design
 🗣️ Screen reader support (TalkBack)
+
+
 🚀 Deployment
+
 Frontend: Render (Static Hosting)
 Backend: Render Web Service
 Database: SQLite
@@ -170,11 +199,13 @@ Database: SQLite
 🌐 Live App: https://soma-xrtt.onrender.com
 
 🔮 Future Improvements
+
 🤖 AI-powered personalized learning
 🌍 Multi-language support (Kinyarwanda, etc.)
 📱 Mobile app (Android/iOS)
 ☁️ Cloud sync & backup
 📊 Advanced analytics dashboard
+
 📄 License
 
 ISC License
