@@ -244,10 +244,11 @@ min-height: 20px;
 <option value="teacher">Teacher</option>
 </select>
 <label class="checkbox-group">
-<input type="checkbox" id="terms"> I accept the <a href="#" style="color:var(--primary);">terms and conditions</a>
+<input type="checkbox" id="terms" checked> I accept the <a href="#" style="color:var(--primary);">terms and conditions</a>
 </label>
 <button id="register-btn" onclick="register()" disabled>Register</button>
-<button class="toggle-role" onclick="toggleRole()">Switch to Teacher/Student</button>
+<button onclick="fillTestData()">🧪 Fill Test Data</button>
+<button class="toggle-role" onclick="toggleRole()">Switch Role</button>
 </div>
 <p class="message" id="message"></p>
 </div>
@@ -256,8 +257,11 @@ let currentTab = 'login';
 
 function switchTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const loginBtn = document.querySelector('.tab-btn[onclick*="switchTab(\'login\')"]');
+  const registerBtn = document.querySelector('.tab-btn[onclick*="switchTab(\'register\')"]');
+  const targetBtn = tab === 'login' ? loginBtn : registerBtn;
+  if (targetBtn) targetBtn.classList.add('active');
   document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
   document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
   if (tab === 'register') {
@@ -366,11 +370,31 @@ async function register() {
       switchTab('login');
       document.getElementById('login-username').value = formData.username;
     } else {
-      setMessage(data.error || 'Registration failed', 'error');
+      // Show EXACT server error instead of generic message
+      console.error('Registration error:', data);
+      setMessage(data.error || data.message || 'Unknown server error', 'error');
     }
   } catch (error) {
-    setMessage('Error registering', 'error');
+    console.error('Network error registering:', error);
+    setMessage('Network error - check if server is running', 'error');
   }
+}
+
+function fillTestData() {
+  document.getElementById('full_name').value = 'Test User';
+  document.getElementById('username').value = 'testuser' + Date.now();
+  document.getElementById('password').value = 'Password123';
+  document.getElementById('confirm_password').value = 'Password123';
+  document.getElementById('terms').checked = true;
+  
+  const role = document.getElementById('role').value;
+  if (role === 'teacher') {
+    document.getElementById('email').value = 'teacher' + Date.now() + '@example.com';
+  }
+  
+  updateStrengthBar();
+  validateRegisterForm();
+  setMessage('🧪 Test data filled! Click Register.', 'success');
 }
 
 // Init

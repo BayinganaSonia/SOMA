@@ -668,6 +668,9 @@ async function loadQuiz() {
         btn.onclick = () => checkAnswer(index, btn, quiz.correct_answer);
         optionsDiv.appendChild(btn);
       });
+      // Auto-speak quiz question and options
+      speak(quiz.question);
+      speak('Options: ' + options.map((opt, i) => `${i+1}. ${opt}`).join(', '));
     }
   } catch (error) {
     console.error('Error loading quiz:', error);

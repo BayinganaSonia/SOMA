@@ -120,26 +120,31 @@ function verifyTeacher(req, res, next) {
 
 // User registration
 app.post('/api/register', (req, res) => {
-  console.log('Registration attempt:', req.body); // Debug log
+  console.log('🔴 REGISTRATION ATTEMPT:', req.body);
 
   const { full_name, email, username, password, confirmPassword, role = 'student', termsAccepted } = req.body;
-  // Removed unused 'phone'
+
+  console.log('📋 Parsed fields:', { full_name, email, username, role, termsAccepted: !!termsAccepted, passwordLength: password?.length });
 
   // Validation (same as frontend)
   if (!username || !password || !full_name) {
-    console.log('Validation failed: missing required fields');
+    console.log('❌ MISSING REQUIRED: username=', !!username, 'password=', !!password, 'full_name=', !!full_name);
     return res.status(400).json({ error: 'Username, password, and full name are required' });
   }
   if (password !== confirmPassword) {
+    console.log('❌ PASSWORDS MISMATCH');
     return res.status(400).json({ error: 'Passwords do not match' });
   }
   if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    console.log('❌ WEAK PASSWORD: length=', password.length, 'hasLetters=', /[A-Za-z]/.test(password), 'hasNumbers=', /[0-9]/.test(password));
     return res.status(400).json({ error: 'Password must be at least 8 characters with letters and numbers' });
   }
   if (!termsAccepted) {
+    console.log('❌ TERMS NOT ACCEPTED: termsAccepted=', termsAccepted);
     return res.status(400).json({ error: 'You must accept the terms and conditions' });
   }
   if (role === 'teacher' && (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+    console.log('❌ TEACHER EMAIL INVALID: email=', email, 'valid=', !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
     return res.status(400).json({ error: 'Valid email is required for teacher registration' });
   }
 
