@@ -266,6 +266,7 @@ function switchTab(tab) {
   document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
   if (tab === 'register') {
     attachValidationListeners();
+    validateRegisterForm();
   }
   document.getElementById('message').innerText = '';
 }
@@ -299,18 +300,27 @@ function validateRegisterForm() {
   const username = document.getElementById('username').value.trim();
 
   const isValidPwd = pwd.length >= 8 && /[A-Za-z]/.test(pwd) && /[0-9]/.test(pwd) && pwd === confirmPwd;
-  const isValidEmail = role === 'teacher' ? /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) : true;
+  const isValidEmail = role === 'teacher' ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) : true;
   const allFilled = fullName && username && pwd && confirmPwd && (role !== 'teacher' || email);
 
   document.getElementById('register-btn').disabled = !(allFilled && isValidPwd && terms && isValidEmail);
 }
 
 function attachValidationListeners() {
-  ['full_name', 'email', 'username', 'password', 'confirm_password'].forEach(id => {
-    document.getElementById(id).addEventListener('input', validateRegisterForm);
+  const fields = ['full_name', 'email', 'username', 'password', 'confirm_password'];
+
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    el.removeEventListener('input', validateRegisterForm); // prevent duplicates
+    el.addEventListener('input', validateRegisterForm);
   });
+
+  document.getElementById('terms').removeEventListener('change', validateRegisterForm);
   document.getElementById('terms').addEventListener('change', validateRegisterForm);
+
+  document.getElementById('role').removeEventListener('change', validateRegisterForm);
   document.getElementById('role').addEventListener('change', validateRegisterForm);
+
   document.getElementById('password').addEventListener('input', updateStrengthBar);
 }
 
