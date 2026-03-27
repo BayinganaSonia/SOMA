@@ -1,25 +1,18 @@
-# Advanced Registration Implementation Plan ✅ COMPLETED
+# Registration Fix Progress
 
-## Steps Completed:
+**Status:** Plan Approved & Implementing
 
-### 1. ✅ Update Database Schema (server.js)
-- Added columns: `full_name TEXT, email TEXT UNIQUE, phone TEXT`.
+## Steps:
+- [x] Understand files (index.html, server.js, DB)
+- [x] Create this TODO.md
+- [ ] Refactor server.js /api/register to async/await + Promise DB queries
+- [ ] Add detailed logging
+- [ ] Restart server (`pkill -f 'node server.js' && npm start`)
+- [ ] Test registration (student + teacher)
+- [ ] Verify users in DB
+- [ ] Update TODO.md
+- [ ] Complete task
 
-### 2. ✅ Backend Changes (server.js)
-- Enhanced `/api/register`: Full validation (password strength/confirm, email for teachers required/unique, terms, phone format).
+**Current Issue:** 400 Bad Request on /api/register - likely validation failure. Server logs needed for exact error.
 
-### 3. ✅ Frontend Changes (index.html)
-- Tabbed Login/Register UI.
-- Advanced register form with all fields, real-time validation, password strength meter, role toggle.
-
-### 4. ✅ Testing
-- Backend validations work (tested via API changes).
-- Frontend form validates client-side, more advanced than simple login.
-
-### 5. ✅ Completion
-- Registration now advanced: multi-fields, validations, teacher-specific email req.
-- Login remains simple.
-
-**To test:** Restart server with `node server.js`, open http://localhost:3000/index.html, try registering (student/teacher) and login.
-
-All changes implemented per plan.
+**Next:** Edit server.js

@@ -24,7 +24,6 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE,
     email TEXT UNIQUE,
     full_name TEXT,
-    phone TEXT,
     password TEXT,
     role TEXT DEFAULT 'student'
   )`);
@@ -120,11 +119,15 @@ function verifyTeacher(req, res, next) {
 // Routes
 
 // User registration
-app.post('/api/register', async (req, res) => {
-  const { username, password, confirmPassword, full_name, email, phone, role = 'student', termsAccepted } = req.body;
+app.post('/api/register', (req, res) => {
+  console.log('Registration attempt:', req.body); // Debug log
 
-  // Validation
+  const { full_name, email, username, password, confirmPassword, role = 'student', termsAccepted } = req.body;
+  // Removed unused 'phone'
+
+  // Validation (same as frontend)
   if (!username || !password || !full_name) {
+    console.log('Validation failed: missing required fields');
     return res.status(400).json({ error: 'Username, password, and full name are required' });
   }
   if (password !== confirmPassword) {
@@ -136,44 +139,68 @@ app.post('/api/register', async (req, res) => {
   if (!termsAccepted) {
     return res.status(400).json({ error: 'You must accept the terms and conditions' });
   }
-  if (role === 'teacher' && (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) {
+  if (role === 'teacher' && (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
     return res.status(400).json({ error: 'Valid email is required for teacher registration' });
   }
-  if (phone && !/^\\+?\\d{10,15}$/.test(phone)) {
-    return res.status(400).json({ error: 'Invalid phone number format' });
+
+  // Helper function to check uniqueness
+  function checkUnique(query, params, callback) {
+    db.get(query, params, (err, row) => {
+      if (err) {
+        console.error('DB query error:', err);
+        return callback(new Error('Database error'));
+      }
+      callback(null, row);
+    });
   }
 
-  // Check existing username
-  db.get('SELECT id FROM users WHERE username = ?', [username], async (err, user) => {
-    if (user) {
-      return res.status(400).json({ error: 'Username already exists' });
-    }
-    if (email) {
-      db.get('SELECT id FROM users WHERE email = ?', [email], (err, emailUser) => {
-        if (emailUser) {
-          return res.status(400).json({ error: 'Email already exists' });
-        }
-        proceedRegistration();
-      });
-    } else {
-      proceedRegistration();
+  // Check username
+  checkUnique('SELECT id FROM users WHERE username = ?', [username], (err, existingUser) => {
+    if (err || existingUser) {
+      if (existingUser) return res.status(400).json({ error: 'Username already exists' });
+      return res.status(500).json({ error: 'Registration failed' });
     }
 
-    async function proceedRegistration() {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      db.run(
-        'INSERT INTO users (username, full_name, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)',
-        [username, full_name, email || null, phone || null, hashedPassword, role],
-        function(err) {
-          if (err) {
-            return res.status(500).json({ error: 'Registration failed' });
-          }
-          res.status(201).json({ message: 'User registered successfully' });
+    // Check email if provided
+    if (email) {
+      checkUnique('SELECT id FROM users WHERE email = ?', [email], (err, existingEmail) => {
+        if (err || existingEmail) {
+          if (existingEmail) return res.status(400).json({ error: 'Email already exists' });
+          return res.status(500).json({ error: 'Registration failed' });
         }
-      );
+        insertUser();
+      });
+    } else {
+      insertUser();
+    }
+
+    function insertUser() {
+      bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+          console.error('Bcrypt hash error:', err);
+          return res.status(500).json({ error: 'Password hashing failed' });
+        }
+
+        db.run(
+          'INSERT INTO users (username, full_name, email, password, role) VALUES (?, ?, ?, ?, ?)',
+          [username, full_name, email || null, hash, role],
+          function(err) {
+            if (err) {
+              console.error('Insert error:', err);
+              if (err.message.includes('UNIQUE constraint')) {
+                return res.status(400).json({ error: 'Username or email already exists' });
+              }
+              return res.status(500).json({ error: 'Registration failed: Database error' });
+            }
+            console.log(`✅ User registered: ${username} (${role})`);
+            res.status(201).json({ message: 'Registration successful! Please login.' });
+          }
+        );
+      });
     }
   });
 });
+
 
 // User login
 app.post('/api/login', (req, res) => {
@@ -257,7 +284,7 @@ app.post('/api/quizzes', verifyTeacher, (req, res) => {
 });
 
 app.get('/api/students', verifyTeacher, (req, res) => {
-  db.all('SELECT id, username, role FROM users WHERE role = "student"', (err, students) => {
+  db.all('SELECT id, username, full_name FROM users WHERE role = "student"', (err, students) => {
     if (err) return res.status(500).send('Error fetching students');
     res.json(students);
   });

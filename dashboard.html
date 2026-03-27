@@ -303,42 +303,15 @@ opacity:.7;
 <div style="display:flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1;">
 <span style="font-size:2.5rem;">🎓</span>
 <h1>SOMA+</h1>
+<span id="role-badge" style="background:rgba(79,70,229,0.8);padding:6px 14px;border-radius:20px;font-size:1rem;font-weight:600;min-width:80px;"></span>
 </div>
 <p>Interactive Audio Learning Platform</p>
 </header>
 <main>
 <!-- HOME -->
 <div id="home" class="container active">
-<div class="grid">
-<div class="card" onclick="openPage('lessons'); speak('Opening lessons')">
-<span class="icon">📚</span>
-Lessons
-</div>
-<div class="card" onclick="openPage('quiz'); speak('Opening quiz')">
-<span class="icon">🧠</span>
-Quiz
-</div>
-<button onclick="startQuizVoice()">🎤 Answer with Voice</button>
-<div class="card" onclick="openPage('progress'); speak('Opening progress')">
-<span class="icon">📈</span>
-Progress
-</div>
-<div class="card" onclick="openPage('dashboard'); speak('Opening teacher dashboard')">
-<span class="icon">👩‍🏫</span>
-Teachers
-</div>
-<div class="card" onclick="startVoice()">
-<span class="icon">🎤</span>
-Voice
-</div>
-<div class="card" onclick="help()">
-<span class="icon">💡</span>
-Help
-</div>
-<div class="card" onclick="logout()">
-<span class="icon">🚪</span>
-Logout
-</div>
+<div class="grid" id="home-grid">
+<!-- Dynamic cards populated by initDashboard() -->
 </div>
 </div>
 <!-- LESSONS -->
@@ -369,36 +342,60 @@ Logout
 <br>
 <button class="back" onclick="goHome()">Back</button>
 </div>
-<!-- DASHBOARD -->
-<div id="dashboard" class="section">
-<h2>Teacher Dashboard</h2>
-<div class="lesson">
-<h3>Student Profiles</h3>
-<button onclick="speak('Student profile management')">
-View Students
-</button>
+<!-- TEACHER DASHBOARD -->
+<div id="teacher-dashboard" class="section">
+<h2>🧑‍🏫 Teacher Dashboard</h2>
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 800px; margin: 0 auto;">
+  <div class="card" onclick="openPage('student-progress')">
+    <span class="icon">👥</span>
+    <div>View Students</div>
+  </div>
+  <div class="card" onclick="openPage('add-lesson')">
+    <span class="icon">+📖</span>
+    <div>Add Lesson</div>
+  </div>
+  <div class="card" onclick="openPage('add-quiz')">
+    <span class="icon">+🧠</span>
+    <div>Add Quiz</div>
+  </div>
 </div>
-<div class="lesson">
-<h3>Add New Lesson</h3>
-<input type="text" id="lesson-title" placeholder="Lesson Title" style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);">
-<textarea id="lesson-content" placeholder="Lesson Content" style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);height:80px;"></textarea>
-<textarea id="lesson-audio" placeholder="Audio Text" style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);height:60px;"></textarea>
-<button onclick="addLesson()">Add Lesson</button>
+<button class="back" onclick="goHome()">← Back to Home</button>
 </div>
-<div class="lesson">
-<h3>Add New Quiz</h3>
-<input type="text" id="quiz-question" placeholder="Question" style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);">
-<input type="text" id="quiz-options" placeholder='Options (comma separated)' style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);">
-<input type="number" id="quiz-answer" placeholder="Correct Answer Index (0-based)" style="width:100%;margin:10px 0;padding:10px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.6);color:var(--text);">
-<button onclick="addQuiz()">Add Quiz</button>
+
+<!-- New sections -->
+<div id="student-progress" class="section">
+<h2>👥 Students</h2>
+<div class="lesson" style="max-width: 500px; margin: auto;">
+  <h3>Student List</h3>
+  <div id="students-list" style="max-height:300px; overflow-y:auto;">
+    Loading students...
+  </div>
 </div>
-<div class="lesson">
-<h3>Progress Reports</h3>
-<button onclick="speak('Viewing reports')">
-View Reports
-</button>
+<button class="back" onclick="goToTeacherHome()">← Back</button>
 </div>
-<button class="back" onclick="goHome()">Back</button>
+
+<div id="add-lesson" class="section">
+<h2>+📖 Add New Lesson</h2>
+<div class="lesson" style="max-width:500px; margin:auto;">
+  <h3>Lesson Details</h3>
+  <input id="new-lesson-title" placeholder="Title">
+  <textarea id="new-lesson-content" placeholder="Content" style="height:80px;"></textarea>
+  <textarea id="new-lesson-audio" placeholder="Audio text" style="height:80px;"></textarea>
+  <button onclick="addNewLesson()">Add Lesson</button>
+</div>
+<button class="back" onclick="goToTeacherHome()">← Back</button>
+</div>
+
+<div id="add-quiz" class="section">
+<h2>+🧠 Add New Quiz</h2>
+<div class="lesson" style="max-width:500px; margin:auto;">
+  <h3>Quiz Details</h3>
+  <input id="new-quiz-question" placeholder="Question">
+  <input id="new-quiz-options" placeholder="Options, comma separated">
+  <input id="new-quiz-answer" type="number" placeholder="Correct index (0-based)">
+  <button onclick="addNewQuiz()">Add Quiz</button>
+</div>
+<button class="back" onclick="goToTeacherHome()">← Back</button>
 </div>
 </main>
 <footer>
@@ -411,6 +408,21 @@ const totalLessons = 4;
 
 if (!token) {
   window.location.href = '/index.html';
+}
+
+function isTeacher() {
+  return userRole === 'teacher';
+}
+
+function initRoleCheck() {
+  const badge = document.getElementById('role-badge');
+  if (isTeacher()) {
+    badge.textContent = '👩‍🏫 Teacher';
+    badge.style.background = 'linear-gradient(135deg, #8b5cf6, #06b6d4)';
+  } else {
+    badge.textContent = '🧑‍🎓 Student';
+    badge.style.background = 'linear-gradient(135deg, #10b981, #14b8a6)';
+  }
 }
 
 /* NAVIGATION */
@@ -433,20 +445,71 @@ function showToast(message) {
   setTimeout(()=>{ toast.style.opacity='0'; toast.addEventListener('transitionend',()=>toast.remove()); }, 1800);
 }
 
+function initDashboard() {
+  const grid = document.getElementById('home-grid');
+  grid.innerHTML = '';
+  
+  const studentCards = [
+    {icon: '📚', text: 'Lessons', onclick: `openPage('lessons')`},
+    {icon: '🧠', text: 'Quiz', onclick: `openPage('quiz')`},
+    {icon: '📈', text: 'Progress', onclick: `openPage('progress')`},
+    {icon: '🎤', text: 'Voice', onclick: `startVoice()`},
+    {icon: '💡', text: 'Help', onclick: `help()`},
+    {icon: '🚪', text: 'Logout', onclick: `logout()`}
+  ];
+  
+  const teacherCards = [
+    {icon: '📚', text: 'Lessons', onclick: `openPage('lessons')`},
+{icon: '👥', text: 'Students', onclick: `openPage('student-progress')`},
+    {icon: '+📖', text: 'Add Lesson', onclick: `openPage('add-lesson')`},
+    {icon: '+🧠', text: 'Add Quiz', onclick: `openPage('add-quiz')`},
+    {icon: '🎤', text: 'Voice', onclick: `startVoice()`},
+    {icon: '💡', text: 'Help', onclick: `help()`},
+    {icon: '🚪', text: 'Logout', onclick: `logout()`}
+  ];
+  
+  const cards = isTeacher() ? teacherCards : studentCards;
+  cards.forEach((card, index) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.animationDelay = `${0.1 + index * 0.05}s`;
+    div.innerHTML = `<span class="icon">${card.icon}</span><div>${card.text}</div>`;
+    div.onclick = new Function(card.onclick);
+    grid.appendChild(div);
+  });
+}
+
 function openPage(page){
+  // Teacher access check for new pages
+  if (!isTeacher() && (page === 'teacher-dashboard' || page === 'student-progress' || page === 'add-lesson' || page === 'add-quiz')) {
+    showToast('Teacher features only');
+    speak('Access denied');
+    return;
+  }
+  
   document.getElementById('home').classList.remove('active');
   document.querySelectorAll('.section').forEach(sec=>{
     sec.classList.remove('active');
     sec.style.display='none';
   });
   let target = document.getElementById(page);
-  target.style.display = 'block';
-  setTimeout(()=> target.classList.add('active'), 20);
+  if (target) {
+    target.style.display = 'block';
+    setTimeout(()=> target.classList.add('active'), 20);
+  }
 
   if (page === 'lessons') loadLessons();
   if (page === 'quiz') loadQuiz();
-  setStatus(`Navigated to ${page.charAt(0).toUpperCase()+page.slice(1)}`);
-  showToast(`${page.charAt(0).toUpperCase()+page.slice(1)} loaded`);
+  if (page === 'student-progress') loadStudents();
+  if (page === 'add-lesson' || page === 'add-quiz') clearForms();
+  setStatus(`Opened ${page.replace('-', ' ')}`);
+
+  // Announce navigation
+  setTimeout(() => announcePage(page), 300);
+}
+
+function goToTeacherHome() {
+  openPage('teacher-dashboard');
 }
 
 /* HOME */
@@ -455,6 +518,7 @@ document.querySelectorAll(".section").forEach(sec=>{
 sec.style.display="none";
 });
 document.getElementById("home").classList.add("active");
+setTimeout(() => announcePage('home'), 200);
 }
 /* TEXT TO SPEECH */
 function speak(text){
@@ -462,6 +526,21 @@ let speech = new SpeechSynthesisUtterance(text);
 speech.rate = 1;
 speech.pitch = 1;
 window.speechSynthesis.speak(speech);
+}
+
+function announcePage(page) {
+  const messages = {
+    'home': 'Welcome to home dashboard',
+    'lessons': 'Welcome to lessons',
+    'quiz': 'Welcome to quiz',
+    'progress': 'Welcome to progress',
+    'teacher-dashboard': 'Welcome to teacher dashboard',
+    'student-progress': 'Welcome to students',
+    'add-lesson': 'Welcome to add lesson',
+    'add-quiz': 'Welcome to add quiz'
+  };
+  const message = messages[page] || `Welcome to ${page.replace('-', ' ')}`;
+  speak(message);
 }
 /*Voice to Quiz*/
 function startQuizVoice() {
@@ -780,10 +859,98 @@ async function addQuiz() {
   }
 }
 /* INIT */
-window.onload=function(){
-updateProgress();
-speak("Welcome back to SOMA Plus. Your smart learning companion.");
+async function loadStudents() {
+  try {
+    const response = await fetch('/api/students', {
+      headers: {'Authorization': token}
+    });
+    const students = await response.json();
+    const list = document.getElementById('students-list');
+    list.innerHTML = '';
+    students.forEach(student => {
+      const div = document.createElement('div');
+      div.style.padding = '10px';
+      div.style.borderBottom = '1px solid rgba(148,163,184,0.3)';
+      div.style.textAlign = 'left';
+      div.innerHTML = `<strong>${student.username}</strong> (${student.full_name || 'No name'})`;
+      list.appendChild(div);
+    });
+  } catch (e) {
+    document.getElementById('students-list').innerHTML = 'Error loading students';
+  }
 }
+
+function clearForms() {
+  document.querySelectorAll('#add-lesson input, #add-lesson textarea, #add-quiz input').forEach(el => el.value = '');
+}
+
+async function loadStudentProgress(id, name) {
+  try {
+    const response = await fetch(`/api/students/${id}/progress`, {
+      headers: {'Authorization': token}
+    });
+    const progress = await response.json();
+    speak(`Progress for ${name}`);
+    showToast(`${name}: ${progress.length} lessons tracked`);
+  } catch (e) {
+    showToast('Error loading progress');
+  }
+}
+
+async function addNewLesson() {
+  const title = document.getElementById('new-lesson-title').value;
+  const content = document.getElementById('new-lesson-content').value;
+  const audio = document.getElementById('new-lesson-audio').value;
+  if (!title || !content) return showToast('Fill all fields');
+  
+  try {
+    const res = await fetch('/api/lessons', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': token},
+      body: JSON.stringify({title, content, audio_text: audio})
+    });
+    if (res.ok) {
+      showToast('Lesson added!');
+      clearForms();
+    } else {
+      showToast('Add failed');
+    }
+  } catch (e) {
+    showToast('Error');
+  }
+}
+
+async function addNewQuiz() {
+  const question = document.getElementById('new-quiz-question').value;
+  const optionsStr = document.getElementById('new-quiz-options').value;
+  const answer = parseInt(document.getElementById('new-quiz-answer').value);
+  if (!question || !optionsStr) return showToast('Fill all fields');
+  
+  const options = optionsStr.split(',').map(s => s.trim());
+  
+  try {
+    const res = await fetch('/api/quizzes', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': token},
+      body: JSON.stringify({question, options, correct_answer: answer})
+    });
+    if (res.ok) {
+      showToast('Quiz added!');
+      clearForms();
+    } else {
+      showToast('Add failed');
+    }
+  } catch (e) {
+    showToast('Error');
+  }
+}
+
+window.onload = function() {
+  initRoleCheck();
+  initDashboard();
+  updateProgress();
+  speak(`Welcome ${isTeacher() ? 'Teacher' : 'Student'}`);
+};
 </script>
 </body>
 </html>

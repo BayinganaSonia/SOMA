@@ -1,0 +1,24 @@
+
+<!-- Replace the entire existing #dashboard section with this new #teacher-dashboard -->
+<div id="teacher-dashboard" class="section">
+<h2>🧑‍🏫 Teacher Dashboard</h2>
+<div id="students-list" class="lesson">
+<h3>👥 Students</h3>
+<div id="student-items"></div>
+</div>
+<div class="lesson">
+<h3>+ Add New Lesson</h3>
+<input type="text" id="new-lesson-title" placeholder="Lesson Title">
+<textarea id="new-lesson-content" placeholder="Lesson Content" style="height:80px;"></textarea>
+<textarea id="new-lesson-audio" placeholder="Audio Text" style="height:60px;"></textarea>
+<button onclick="addNewLesson()">Add Lesson</button>
+</div>
+<div class="lesson">
+<h3>+ Add New Quiz</h3>
+<input type="text" id="new-quiz-question" placeholder="Question">
+<input type="text" id="new-quiz-options" placeholder='Options (comma separated, e.g. "A,B,C")'>
+<input type="number" id="new-quiz-answer" placeholder="Correct Answer Index (0-based)" min="0">
+<button onclick="addNewQuiz()">Add Quiz</button>
+</div>
+<button class="back" onclick="goHome()">Back to Home</button>
+</div>

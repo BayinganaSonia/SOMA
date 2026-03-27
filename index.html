@@ -232,12 +232,9 @@ min-height: 20px;
 <button onclick="login()">Login</button>
 </div>
 <div id="register-form" class="hidden">
-<h2>Advanced Registration</h2>
+<h2>Registration</h2>
 <input type="text" id="full_name" placeholder="Full Name">
-<div class="form-row">
-<input type="email" id="email" placeholder="Email (required for teachers)">
-<input type="tel" id="phone" placeholder="Phone (optional, e.g. +1234567890)">
-</div>
+<input type="email" id="email" placeholder="Email (required for teachers)" style="margin:12px auto;width:92%;">
 <input type="text" id="username" placeholder="Username">
 <input type="password" id="password" placeholder="Password">
 <input type="password" id="confirm_password" placeholder="Confirm Password">
@@ -299,13 +296,13 @@ function validateRegisterForm() {
 
   const isValidPwd = pwd.length >= 8 && /[A-Za-z]/.test(pwd) && /[0-9]/.test(pwd) && pwd === confirmPwd;
   const isValidEmail = role === 'teacher' ? /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) : true;
-  const allFilled = fullName && username && pwd && confirmPwd;
+  const allFilled = fullName && username && pwd && confirmPwd && (role !== 'teacher' || email);
 
   document.getElementById('register-btn').disabled = !(allFilled && isValidPwd && terms && isValidEmail);
 }
 
 function attachValidationListeners() {
-  ['full_name', 'email', 'phone', 'username', 'password', 'confirm_password'].forEach(id => {
+  ['full_name', 'email', 'username', 'password', 'confirm_password'].forEach(id => {
     document.getElementById(id).addEventListener('input', validateRegisterForm);
   });
   document.getElementById('terms').addEventListener('change', validateRegisterForm);
@@ -350,7 +347,6 @@ async function register() {
   const formData = {
     full_name: document.getElementById('full_name').value.trim(),
     email: document.getElementById('email').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
     username: document.getElementById('username').value.trim(),
     password: document.getElementById('password').value,
     confirmPassword: document.getElementById('confirm_password').value,
